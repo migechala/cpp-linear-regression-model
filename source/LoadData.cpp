@@ -78,52 +78,58 @@ LoadData::fromCSV(const std::string &filename,
 
   int rowIndex = 0;
   while (std::getline(file, line)) {
-    size_t start = 0;
-    size_t end = line.find(delimiter);
     int currentColumn = 0;
 
-    //
-    while (end != std::string::npos) {
-      const std::string entry = line.substr(start, end - start);
+    auto processCell = [&](const std::string &entry) {
       if (rowIndex == 0) {
-        auto it = std::find(targetColumns.begin(), targetColumns.end(), entry);
+        auto it = std::find(targetColumns.begin(), targetColumns.end(),
+                            std::string_view(entry));
         if (it != targetColumns.end()) {
-          csvIndexToName[std::distance(targetColumns.begin(), it)] = entry;
-          data[entry];
+          csvIndexToName[currentColumn] = entry;
+          data.try_emplace(entry);
         }
-      } else if (csvIndexToName.contains(
-                     currentColumn)) { // if a column of interest
-        if (rowIndex == 1) {
+        return;
+      }
 
-          if (isInteger(entry)) {
-            data[csvIndexToName[currentColumn]] = std::vector<int>{};
-          } else if (isDouble(entry)) {
-            data[csvIndexToName[currentColumn]] = std::vector<double>{};
-          } else {
-            data[csvIndexToName[currentColumn]] = std::vector<std::string>{};
-          }
+      auto mapIt = csvIndexToName.find(currentColumn);
+      if (mapIt == csvIndexToName.end())
+        return;
+
+      const std::string &colName = mapIt->second;
+
+      if (rowIndex == 1) {
+        if (isInteger(entry)) {
+          data[colName] = std::vector<int>{};
+        } else if (isDouble(entry)) {
+          data[colName] = std::vector<double>{};
+        } else {
+          data[colName] = std::vector<std::string>{};
         }
-        // push into column vec
-        std::visit(Visitor{[entry](std::vector<double> &d) {
-                             d.emplace_back(std::stod(entry));
-                           },
-                           [entry](std::vector<int> &i) {
-                             i.emplace_back(std::stoi(entry));
-                           },
-                           [entry](std::vector<std::string> &s) {
-                             s.emplace_back(entry);
-                           }},
-                   data[entry]);
+      }
+      std::visit(
+          Visitor{
+              [&](std::vector<double> &d) { d.emplace_back(std::stod(entry)); },
+              [&](std::vector<int> &i) { i.emplace_back(std::stoi(entry)); },
+              [&](std::vector<std::string> &s) { s.emplace_back(entry); },
+          },
+          data.at(colName));
+    };
+
+    size_t start = 0;
+    while (true) {
+      size_t end = line.find(delimiter, start);
+      std::string entry = (end == std::string::npos)
+                              ? line.substr(start)
+                              : line.substr(start, end - start);
+
+      processCell(entry);
+
+      if (end == std::string::npos) {
+        break;
       }
       start = end + 1;
-      end = line.find(delimiter, start);
-      currentColumn++;
+      ++currentColumn;
     }
-
-    // get last entry
-    std::string entry = line.substr(start);
-
-    // increment row index
     rowIndex++;
   }
   return data;
