@@ -3,15 +3,14 @@
 #include <streambuf>
 
 class TeeStreamBuf : public std::streambuf {
- public:
-  TeeStreamBuf(std::streambuf* out1, std::streambuf* out2)
-      : out1_(out1), out2_(out2) {
+public:
+  TeeStreamBuf(std::streambuf* out1, std::streambuf* out2) : out1_(out1), out2_(out2) {
     if (!out1_ && !out2_) {
       throw std::runtime_error("Both streams cannot be nullptr");
     }
   }
 
- protected:
+protected:
   /**
    * Overflow function for a single character
    * \param ch the character to to be written
@@ -48,10 +47,10 @@ class TeeStreamBuf : public std::streambuf {
     if (out2_) {
       r2 = out2_->sputn(s, n);
     }
-    return (r1 < n || r2 < n) ? 0 : n;  // both must succeed
+    return (r1 < n || r2 < n) ? 0 : n; // both must succeed
   }
 
- private:
-  std::streambuf* out1_;  // e.g. std::cout.rdbuf()
-  std::streambuf* out2_;  // e.g. file_stream.rdbuf()
+private:
+  std::streambuf* out1_; // e.g. std::cout.rdbuf()
+  std::streambuf* out2_; // e.g. file_stream.rdbuf()
 };

@@ -17,7 +17,7 @@ enum LOG_VALUES { INFO, WARNING, ERROR };
  * Logger class that works via singleton and by teeing into two (or one) buffers
  */
 class Logger {
- public:
+public:
   /**
    * Method to log, use << afterwards to stream into the logger
    * \return the instance of the logger
@@ -37,9 +37,8 @@ class Logger {
    * Get the stream object
    * \return the stream object
    */
-  std::ostream& out() { return stream_; }
-  template <class T>
-  Logger& operator<<(const T& v) {
+  std::ostream&              out() { return stream_; }
+  template <class T> Logger& operator<<(const T& v) {
     if (!stream_ || !tee_) {
       tee_.reset(new TeeStreamBuf(std::cout.rdbuf(), nullptr));
       stream_.rdbuf(tee_.get());
@@ -52,7 +51,7 @@ class Logger {
     return *this;
   }
 
- private:
+private:
   Logger() : stream_(nullptr) {}
 
   /**
@@ -68,7 +67,7 @@ class Logger {
     }
   }
 
-  std::ofstream file_;
+  std::ofstream                 file_;
   std::unique_ptr<TeeStreamBuf> tee_;
-  std::ostream stream_;
+  std::ostream                  stream_;
 };
