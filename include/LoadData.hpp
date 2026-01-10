@@ -5,7 +5,7 @@
 #include <variant>
 #include <vector>
 
-enum class LoadError {
+enum LoadError {
   FileNotFound,
   InvalidCSV,
   MissingTarget,

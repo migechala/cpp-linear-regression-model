@@ -91,11 +91,12 @@ LoadData::fromCSV(const std::string &filename,
         return;
       }
 
-      auto mapIt = csvIndexToName.find(currentColumn);
-      if (mapIt == csvIndexToName.end())
+      auto it = csvIndexToName.find(currentColumn);
+      if (it == csvIndexToName.end()) {
         return;
+      }
 
-      const std::string &colName = mapIt->second;
+      const std::string &colName = it->second;
 
       if (rowIndex == 1) {
         if (isInteger(entry)) {
@@ -112,7 +113,7 @@ LoadData::fromCSV(const std::string &filename,
               [&](std::vector<int> &i) { i.emplace_back(std::stoi(entry)); },
               [&](std::vector<std::string> &s) { s.emplace_back(entry); },
           },
-          data.at(colName));
+          data[colName]);
     };
 
     size_t start = 0;

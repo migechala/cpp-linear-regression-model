@@ -7,7 +7,7 @@ int main() {
   Logger::open("log.txt");
   Logger::log() << "Starting..." << std::endl;
   //
-  std::vector<std::string_view> columns = {"AREA NAME"};
+  std::vector<std::string_view> columns = {"AREA NAME", "Crm Cd Desc", "Age"};
   LoadData dataLoader;
 
   auto result = dataLoader.fromCSV("assets/crime_LA.csv", columns);
