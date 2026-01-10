@@ -18,7 +18,9 @@ class LoadData {
   const int yearIndex = 6;
   const int monthIndex = 3;
   const int dayIndex = 0;
+  const char delimiter = ',';
   int parseDate(const std::string &dateStr);
+  std::vector<std::string> parseCSVLine(const std::string &line);
 
 public:
   std::expected<std::unordered_map<std::string, Column>, LoadError>

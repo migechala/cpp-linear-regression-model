@@ -11,6 +11,45 @@ int LoadData::parseDate(const std::string &dateStr) {
   return year * 10000 + month * 100 + day;
 }
 
+std::vector<std::string> LoadData::parseCSVLine(const std::string &line) {
+  std::vector<std::string> out;
+  out.reserve(32);
+
+  std::string cell;
+  cell.reserve(64);
+
+  bool inQuotes = false;
+
+  for (size_t i = 0; i < line.size(); ++i) {
+    char c = line[i];
+
+    if (inQuotes) {
+      if (c == '"') {
+        if (i + 1 < line.size() && line[i + 1] == '"') {
+          cell.push_back('"');
+          ++i;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        cell.push_back(c);
+      }
+    } else {
+      if (c == '"') {
+        inQuotes = true;
+      } else if (c == delimiter) {
+        out.push_back(std::move(cell));
+        cell.clear();
+      } else {
+        cell.push_back(c);
+      }
+    }
+  }
+
+  out.push_back(std::move(cell));
+  return out;
+}
+
 template <typename... Callable> struct Visitor : Callable... {
   using Callable::operator()...;
 };
@@ -27,7 +66,6 @@ LoadData::fromCSV(const std::string &filename,
     return std::unexpected(LoadError::FileNotFound);
   }
 
-  const char delimiter = ',';
   std::string line;
 
   std::unordered_map<std::string, Column> data;
@@ -116,20 +154,11 @@ LoadData::fromCSV(const std::string &filename,
           data[colName]);
     };
 
-    size_t start = 0;
-    while (true) {
-      size_t end = line.find(delimiter, start);
-      std::string entry = (end == std::string::npos)
-                              ? line.substr(start)
-                              : line.substr(start, end - start);
+    auto cells = parseCSVLine(line);
 
-      processCell(entry);
-
-      if (end == std::string::npos) {
-        break;
-      }
-      start = end + 1;
-      ++currentColumn;
+    for (currentColumn = 0; currentColumn < static_cast<int>(cells.size());
+         ++currentColumn) {
+      processCell(cells[currentColumn]);
     }
     rowIndex++;
   }
