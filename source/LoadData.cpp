@@ -1,3 +1,9 @@
+/**
+ * \author: Mikhail Chalakov
+ * Email: mchalakov@wisc.edu
+ * \date: 21/12/2025
+ */
+
 #include "LoadData.hpp"
 
 #include "Logger.hpp"
@@ -50,16 +56,13 @@ std::vector<std::string> LoadData::parseCSVLine(const std::string &line) {
   return out;
 }
 
-template <typename... Callable> struct Visitor : Callable... {
-  using Callable::operator()...;
-};
-
 std::expected<std::unordered_map<std::string, Column>, LoadError>
 LoadData::fromCSV(const std::string &filename,
                   const std::span<std::string_view> targetColumns) {
+  Logger::log() << "Starting data load from CSV: " << filename << std::endl;
+  auto start = std::chrono::high_resolution_clock::now();
 
   const std::string path = std::string(BASE_PATH) + "/" + filename;
-  Logger::log() << path << "\n";
 
   std::ifstream file(path);
   if (!file.is_open()) {
@@ -162,5 +165,9 @@ LoadData::fromCSV(const std::string &filename,
     }
     rowIndex++;
   }
+  auto end = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> duration = end - start;
+  Logger::log() << "Data loaded in " << duration.count() << " seconds"
+                << std::endl;
   return data;
 }

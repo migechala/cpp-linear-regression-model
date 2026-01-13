@@ -1,10 +1,19 @@
+/**
+ * \author: Mikhail Chalakov
+ * Email: mchalakov@wisc.edu
+ * \date: 21/12/2025
+ */
+#pragma once
+#include "Column.hpp"
 #include <expected>
 #include <span>
 #include <string>
 #include <unordered_map>
 #include <variant>
 #include <vector>
-
+/**
+ * Enum to depict all of the different types of errors in loading our csv
+ */
 enum LoadError {
   FileNotFound,
   InvalidCSV,
@@ -12,8 +21,7 @@ enum LoadError {
   NonNumericValue,
   EmptyDataset
 };
-using Column = std::variant<std::vector<int>, std::vector<double>,
-                            std::vector<std::string>>;
+
 class LoadData {
   const int yearIndex = 6;
   const int monthIndex = 3;

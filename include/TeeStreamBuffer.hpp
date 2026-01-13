@@ -1,10 +1,24 @@
+/**
+ * \author: Mikhail Chalakov
+ * Email: mchalakov@wisc.edu
+ * \date: 16/12/2025
+ */
 #pragma once
 #include <cstddef>
 #include <streambuf>
-
+/**
+ * Tee stream buffer that allows teeing to multiple streams
+ */
 class TeeStreamBuf : public std::streambuf {
 public:
-  TeeStreamBuf(std::streambuf* out1, std::streambuf* out2) : out1_(out1), out2_(out2) {
+  /**
+   * Constructor that creates our buffer, only 1 stream is required
+   * \param out1 the first stream
+   * \param out2 the second stream
+   * \throw a runtime erorr if both streams are null
+   */
+  TeeStreamBuf(std::streambuf *out1, std::streambuf *out2 = nullptr)
+      : out1_(out1), out2_(out2) {
     if (!out1_ && !out2_) {
       throw std::runtime_error("Both streams cannot be nullptr");
     }
@@ -17,7 +31,8 @@ protected:
    * \return either EOF or new pos
    */
   int overflow(int ch) override {
-    if (ch == EOF) return !EOF;
+    if (ch == EOF)
+      return !EOF;
 
     // forward to both buffers
     if (!out1_) {
@@ -39,7 +54,7 @@ protected:
    * \param n the streamsize to be streamed
    * \return the new streamsize which should be 0
    */
-  std::streamsize xsputn(const char* s, std::streamsize n) override {
+  std::streamsize xsputn(const char *s, std::streamsize n) override {
     std::streamsize r1, r2;
     if (out1_) {
       r1 = out1_->sputn(s, n);
@@ -51,6 +66,6 @@ protected:
   }
 
 private:
-  std::streambuf* out1_; // e.g. std::cout.rdbuf()
-  std::streambuf* out2_; // e.g. file_stream.rdbuf()
+  std::streambuf *out1_; // e.g. std::cout.rdbuf()
+  std::streambuf *out2_; // e.g. file_stream.rdbuf()
 };
