@@ -4,7 +4,7 @@ Included in this repo is an example csv that is downloaded from a third party we
 git clone https://github.com/migechala/cpp-linear-regression-model.git
 cd cpp-linear-regression-model
 chmod +x download_sample_csv.sh
-./download_sample_csv
+./download_sample_csv.sh
 cmake -S . -B build && cmake --build build
 ./build/linear_regression
 ```
