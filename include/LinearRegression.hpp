@@ -4,7 +4,6 @@
 #include <expected>
 #include <ranges>
 #include <string>
-static double prev = 0.0;
 
 class LinearRegression {
   std::vector<std::vector<double>> featureMatrix;
@@ -22,25 +21,30 @@ private:
       return std::unexpected("Vectors must be of the same length");
     }
     double error = 0.0;
+    if (y.size() != yhat.size()) {
+      return std::unexpected(
+          "Vectors must be of the same length: " + std::to_string(y.size()) +
+          " != " + std::to_string(yhat.size()));
+    }
     for (auto [i, j] : std::views::zip(y, yhat)) {
       error += (i - j) * (i - j);
     }
     return error;
   }
   inline std::vector<double> predict(const std::vector<double> &w) {
+
     std::vector<double> yhat;
     yhat.reserve(featureMatrix.size());
 
     for (const auto &row : featureMatrix) {
+      if (row.size() != w.size()) {
+        throw std::runtime_error(
+            "predict: row.size()=" + std::to_string(row.size()) +
+            " but w.size()=" + std::to_string(w.size()));
+      }
       double s = 0.0;
       for (size_t j = 0; j < w.size(); ++j) {
         s += row[j] * w[j];
-        if (std::isnan(s)) {
-          Logger::log() << "Feature value: " << row[j] << ", Weight: " << w[j]
-                        << ", Previous weight: " << prev << "\n";
-          throw std::runtime_error("Prediction resulted in NaN value");
-        }
-        prev = w[j];
       }
       yhat.emplace_back(s);
     }

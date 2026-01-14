@@ -13,11 +13,10 @@ int main() {
   Logger::open("log.txt");
   Logger::log() << "Starting..." << std::endl;
   //
-  std::vector<std::string_view> columns = {"AREA", "TIME OCC", "Crm Cd",
-                                           "Vict Age"};
+  std::vector<std::string_view> columns = {"Seattle", "Vancouver", "Jerusalem"};
   LoadData dataLoader;
 
-  auto result = dataLoader.fromCSV("assets/crime_LA.csv", columns);
+  auto result = dataLoader.fromCSV("assets/temperature.csv", columns);
 
   if (!result) {
     Logger::log() << "Error loading data: " << static_cast<int>(result.error())
@@ -25,21 +24,22 @@ int main() {
     return -1;
   }
   auto data = result.value();
+  Logger::log() << "\n";
+
   for (const auto &i : data) {
-    std::cout << i.first << ": ";
-    std::visit(Visitor{[](auto &x) {
-                 for (int i = 0; i < 200; ++i)
-                   std::cout << x[i] << ",";
+    std::visit(Visitor{[&i](auto &x) {
+                 Logger::log() << i.first << ": " << x.size() << "\n";
                }},
                i.second);
-    std::cout << "\n\n";
   }
-  LinearRegression lr({data["AREA"]}, data["Vict Age"]);
-  lr.fit(0.001, 1000);
-  double prediction = lr.predictSingle({15.0});
-  Logger::log() << "Prediction for AREA=15: Vict Age= " << prediction
-                << std::endl;
-  //
+  Logger::log() << "\n";
+
+  LinearRegression lr({data["Seattle"], data["Vancouver"]}, data["Jerusalem"]);
+
+  lr.fit(0.00001, 1000);
+  double prediction = lr.predictSingle({281.8, 284.63});
+  Logger::log() << "Prediction for Seattle=281.8, Vancouver=284.63: Jerusalem= "
+                << prediction << std::endl;
   Logger::log() << "Done" << std::endl;
   return 0;
 }

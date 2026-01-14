@@ -44,7 +44,7 @@ std::vector<std::string> LoadData::parseCSVLine(const std::string &line) {
       if (c == '"') {
         inQuotes = true;
       } else if (c == delimiter) {
-        out.push_back(std::move(cell));
+        out.emplace_back(cell);
         cell.clear();
       } else {
         cell.push_back(c);
@@ -150,7 +150,13 @@ LoadData::fromCSV(const std::string &filename,
       }
       std::visit(
           Visitor{
-              [&](std::vector<double> &d) { d.emplace_back(std::stod(entry)); },
+              [&](std::vector<double> &d) {
+                try {
+                  d.emplace_back(std::stod(entry));
+                } catch (...) {
+                  d.emplace_back(0.00);
+                }
+              },
               [&](std::vector<int> &i) { i.emplace_back(std::stoi(entry)); },
               [&](std::vector<std::string> &s) { s.emplace_back(entry); },
           },
